@@ -7,12 +7,7 @@
  */
 package org.dspace.handle;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -88,23 +83,26 @@ public class MultiRemoteDSpaceRepositoryHandlePlugin implements HandleStorage
     // //////////////////////////////////////
 
     /**
-     * HandleStorage interface method - not implemented.
+     * HandleStorage interface method
      */
     @Override
     public void init(StreamTable st) throws Exception
     {
-        // Not implemented
-        if (log.isInfoEnabled())
-        {
-            log.info("Called init");
-        }
-        
+        log.info("Called init");
+
         // initalize our prefix map
         this.prefixes = new HashMap<>();
 
         // try to find our configuration
         Properties properties = loadProperties(CONFIG_FILE_NAME);
-        
+
+        // adjust with env
+        for (Map.Entry<String, String> e : System.getenv().entrySet()) {
+            if (e.getKey().startsWith("dspace.handle.endpoint")) {
+                properties.setProperty(e.getKey(), e.getValue());
+            }
+        }
+
         // find urls of all configured dspace instances
         for (Enumeration e = properties.propertyNames(); e.hasMoreElements();)
         {
@@ -141,10 +139,7 @@ public class MultiRemoteDSpaceRepositoryHandlePlugin implements HandleStorage
             throws HandleException
     {
         // Not implemented
-        if (log.isInfoEnabled())
-        {
-            log.info("Called setHaveNA (not implemented)");
-        }
+        log.info("Called setHaveNA (not implemented)");
     }
 
     /**
@@ -155,10 +150,7 @@ public class MultiRemoteDSpaceRepositoryHandlePlugin implements HandleStorage
             throws HandleException
     {
         // Not implemented
-        if (log.isInfoEnabled())
-        {
-            log.info("Called createHandle (not implemented)");
-        }
+        log.info("Called createHandle (not implemented)");
     }
 
     /**
@@ -168,10 +160,7 @@ public class MultiRemoteDSpaceRepositoryHandlePlugin implements HandleStorage
     public boolean deleteHandle(byte[] theHandle) throws HandleException
     {
         // Not implemented
-        if (log.isInfoEnabled())
-        {
-            log.info("Called deleteHandle (not implemented)");
-        }
+        log.info("Called deleteHandle (not implemented)");
 
         return false;
     }
@@ -184,10 +173,7 @@ public class MultiRemoteDSpaceRepositoryHandlePlugin implements HandleStorage
             throws HandleException
     {
         // Not implemented
-        if (log.isInfoEnabled())
-        {
-            log.info("Called updateValue (not implemented)");
-        }
+        log.info("Called updateValue (not implemented)");
     }
 
     /**
@@ -197,10 +183,7 @@ public class MultiRemoteDSpaceRepositoryHandlePlugin implements HandleStorage
     public void deleteAllRecords() throws HandleException
     {
         // Not implemented
-        if (log.isInfoEnabled())
-        {
-            log.info("Called deleteAllRecords (not implemented)");
-        }
+        log.info("Called deleteAllRecords (not implemented)");
     }
 
     /**
@@ -210,10 +193,7 @@ public class MultiRemoteDSpaceRepositoryHandlePlugin implements HandleStorage
     public void checkpointDatabase() throws HandleException
     {
         // Not implemented
-        if (log.isInfoEnabled())
-        {
-            log.info("Called checkpointDatabase (not implemented)");
-        }
+        log.info("Called checkpointDatabase (not implemented)");
     }
 
     /**
@@ -223,10 +203,7 @@ public class MultiRemoteDSpaceRepositoryHandlePlugin implements HandleStorage
     public void shutdown()
     {
         // Not implemented
-        if (log.isInfoEnabled())
-        {
-            log.info("Called shutdown (not implemented)");
-        }
+        log.info("Called shutdown (not implemented)");
     }
 
     /**
@@ -236,10 +213,7 @@ public class MultiRemoteDSpaceRepositoryHandlePlugin implements HandleStorage
     public void scanHandles(ScanCallback callback) throws HandleException
     {
         // Not implemented
-        if (log.isInfoEnabled())
-        {
-            log.info("Called scanHandles (not implemented)");
-        }
+        log.info("Called scanHandles (not implemented)");
     }
 
     /**
@@ -249,10 +223,7 @@ public class MultiRemoteDSpaceRepositoryHandlePlugin implements HandleStorage
     public void scanNAs(ScanCallback callback) throws HandleException
     {
         // Not implemented
-        if (log.isInfoEnabled())
-        {
-            log.info("Called scanNAs (not implemented)");
-        }
+        log.info("Called scanNAs (not implemented)");
     }
 
     // //////////////////////////////////////
@@ -278,10 +249,7 @@ public class MultiRemoteDSpaceRepositoryHandlePlugin implements HandleStorage
     public byte[][] getRawHandleValues(byte[] theHandle, int[] indexList,
             byte[][] typeList) throws HandleException
     {
-        if (log.isInfoEnabled())
-        {
-            log.info("Called getRawHandleValues");
-        }
+        log.info("Called getRawHandleValues");
 
         if (theHandle == null)
         {
@@ -324,11 +292,8 @@ public class MultiRemoteDSpaceRepositoryHandlePlugin implements HandleStorage
 
     private String getRemoteDSpaceURL(String handle) throws HandleException
     {
-        if (log.isInfoEnabled())
-        {
-            log.info("Called getRemoteDSpaceURL("+handle+").");
-        }
-        
+        log.info("Called getRemoteDSpaceURL("+handle+").");
+
         InputStreamReader jsonStreamReader = null;
         String url = null;
         try
@@ -337,10 +302,7 @@ public class MultiRemoteDSpaceRepositoryHandlePlugin implements HandleStorage
             String endpoint = this.prefixes.get(prefix);
             if (endpoint == null)
             {
-                if (log.isDebugEnabled())
-                {
-                    log.debug("Cannot find endpoint for prefix " + prefix + ", throw HANDLE_DOES_NOT_EXIST.");
-                }
+                log.debug("Cannot find endpoint for prefix " + prefix + ", throw HANDLE_DOES_NOT_EXIST.");
                 throw new HandleException(HandleException.HANDLE_DOES_NOT_EXIST);
             }
 
@@ -354,10 +316,7 @@ public class MultiRemoteDSpaceRepositoryHandlePlugin implements HandleStorage
                     || jsonElement.getAsJsonArray().size() == 0
                     || jsonElement.getAsJsonArray().get(0).isJsonNull())
             {
-                if (log.isDebugEnabled())
-                {
-                    log.debug("Throw HandleException: HANDLE_DOES_NOT_EXIST.");
-                }
+                log.debug("Throw HandleException: HANDLE_DOES_NOT_EXIST.");
                 throw new HandleException(HandleException.HANDLE_DOES_NOT_EXIST);
             }
 
@@ -365,10 +324,7 @@ public class MultiRemoteDSpaceRepositoryHandlePlugin implements HandleStorage
         }
         catch (HandleException | IOException | JsonIOException | JsonSyntaxException e)
         {
-            if (log.isDebugEnabled())
-            {
-                log.debug("Exception in getRawHandleValues", e);
-            }
+            log.debug("Exception in getRawHandleValues", e);
 
             // Stack loss as exception does not support cause
             throw new HandleException(HandleException.INTERNAL_ERROR);
@@ -387,10 +343,7 @@ public class MultiRemoteDSpaceRepositoryHandlePlugin implements HandleStorage
                 }
             }
         }
-        if (log.isDebugEnabled())
-        {
-            log.debug(("getRemoteDspaceURL returns " + url));
-        }
+        log.debug(("getRemoteDspaceURL returns " + url));
         return url;
     }
 
@@ -406,10 +359,7 @@ public class MultiRemoteDSpaceRepositoryHandlePlugin implements HandleStorage
     @Override
     public boolean haveNA(byte[] theHandle) throws HandleException
     {
-        if (log.isInfoEnabled())
-        {
-            log.info("Called haveNA");
-        }
+        log.info("Called haveNA");
         /*
          * Naming authority Handles are in the form: 0.NA/1721.1234
          * 
@@ -441,10 +391,7 @@ public class MultiRemoteDSpaceRepositoryHandlePlugin implements HandleStorage
     {
         String naHandle = Util.decodeString(theNAHandle);
 
-        if (log.isInfoEnabled())
-        {
-            log.info("Called getHandlesForNA for NA " + naHandle);
-        }
+        log.info("Called getHandlesForNA for NA " + naHandle);
 
         List<String> handles = getRemoteDSpaceHandles(naHandle);
         List<byte[]> results = new LinkedList<>();
@@ -491,10 +438,7 @@ public class MultiRemoteDSpaceRepositoryHandlePlugin implements HandleStorage
         }
         catch (IOException | JsonIOException | JsonSyntaxException e)
         {
-            if (log.isDebugEnabled())
-            {
-                log.debug("Exception in getHandlesForNA", e);
-            }
+            log.debug("Exception in getHandlesForNA", e);
 
             // Stack loss as exception does not support cause
             throw new HandleException(HandleException.INTERNAL_ERROR);
@@ -527,18 +471,12 @@ public class MultiRemoteDSpaceRepositoryHandlePlugin implements HandleStorage
             ir = new InputStreamReader(is, "UTF-8");
             props.load(ir);
         } catch (UnsupportedEncodingException ex) {
-            if (log.isInfoEnabled())
-            {
-                log.info("Caught an UnsupportedEncodingException while loading configuration: " + ex.getMessage());
-            }
+            log.info("Caught an UnsupportedEncodingException while loading configuration: " + ex.getMessage());
             throw new RuntimeException(ex);
         }
         catch (IOException ex)
         {
-            if (log.isInfoEnabled())
-            {
-                log.info("Caught an IOException while loading configuration: " + ex.getMessage());
-            }
+            log.info("Caught an IOException while loading configuration: " + ex.getMessage());
             throw ex;
         }
         finally
@@ -602,10 +540,7 @@ public class MultiRemoteDSpaceRepositoryHandlePlugin implements HandleStorage
                 "/" + filename);
             if (null == url)
             {
-                if (log.isInfoEnabled())
-                {
-                    log.info("Cannot find configuration by using getResource().");
-                }
+                log.info("Cannot find configuration by using getResource().");
             } else {
                 try
                 {
@@ -615,11 +550,8 @@ public class MultiRemoteDSpaceRepositoryHandlePlugin implements HandleStorage
                 }
                 catch (FileNotFoundException e)
                 {
-                    if (log.isInfoEnabled())
-                    {
-                        // didn't found fallback config, nothing to do about it.
-                        log.info("Unable to open fallback configuration: " + e.getMessage());
-                    }
+                    // didn't found fallback config, nothing to do about it.
+                    log.info("Unable to open fallback configuration: " + e.getMessage());
                 }
             }
         }
@@ -630,19 +562,14 @@ public class MultiRemoteDSpaceRepositoryHandlePlugin implements HandleStorage
             // where the user started the handle server.
             try
             {
-                is = new FileInputStream("./" + filename);
-                if (log.isInfoEnabled())
-                {
-                    log.info("Loaded configuration from your current working "
-                            + "directory where you started the handle server.");
-                }
+                File file = new File("./" + filename);
+                is = new FileInputStream(file);
+                log.info(String.format("Loaded configuration from %s directory where you started the handle server.",
+                        file.getAbsoluteFile()));
             }
             catch (FileNotFoundException ex)
             {
-                if (log.isInfoEnabled())
-                {
-                    log.info("Can't load config file: " + ex.getMessage());
-                }
+                log.info("Can't load config file: " + ex.getMessage());
             }
         }
         
@@ -677,10 +604,7 @@ public class MultiRemoteDSpaceRepositoryHandlePlugin implements HandleStorage
                     String prefix = jsonElement.getAsJsonArray().get(i).getAsString();
                     this.prefixes.put(prefix, endpoint);
                     
-                    if (log.isInfoEnabled())
-                    {
-                        log.info("Mapping " + prefix + " to instance at " + endpoint);
-                    }
+                    log.info("Mapping " + prefix + " to instance at " + endpoint);
                 }
             } else {
                 log.warn("DSpace instance running at " + url + " returns empty prefix list.");
@@ -695,10 +619,16 @@ public class MultiRemoteDSpaceRepositoryHandlePlugin implements HandleStorage
     public static void main(String[] args) throws Exception
     {
         MultiRemoteDSpaceRepositoryHandlePlugin multi = new MultiRemoteDSpaceRepositoryHandlePlugin();
+        multi.init(null);
+
+        String prefix1 = "123456789";
+        String prefix2 = "123456780";
+        String handle1 = "11234/1-5419";
+
         try
         {
             System.out.println(StringUtils.join(
-                    multi.getRemoteDSpaceHandles("123456789"), ","));
+                    multi.getRemoteDSpaceHandles(prefix1), ","));
         }
         catch (HandleException e)
         {
@@ -707,7 +637,7 @@ public class MultiRemoteDSpaceRepositoryHandlePlugin implements HandleStorage
         try
         {
             System.out.println(StringUtils.join(
-                    multi.getRemoteDSpaceHandles("123456780"), ","));
+                    multi.getRemoteDSpaceHandles(prefix2), ","));
         }
         catch (HandleException e)
         {
@@ -715,7 +645,7 @@ public class MultiRemoteDSpaceRepositoryHandlePlugin implements HandleStorage
         }
         try
         {
-            System.out.println(multi.getRemoteDSpaceURL("123456789/1"));
+            System.out.println(multi.getRemoteDSpaceURL(handle1));
         }
         catch (HandleException e)
         {
@@ -723,7 +653,7 @@ public class MultiRemoteDSpaceRepositoryHandlePlugin implements HandleStorage
         }
         try
         {
-            System.out.println(multi.getRemoteDSpaceURL("123456789/1111111"));
+            System.out.println(multi.getRemoteDSpaceURL(prefix1 + "/1111111"));
         }
         catch (HandleException e)
         {
@@ -731,7 +661,7 @@ public class MultiRemoteDSpaceRepositoryHandlePlugin implements HandleStorage
         }
         try
         {
-            System.out.println(multi.getRemoteDSpaceURL("123456780/1"));
+            System.out.println(multi.getRemoteDSpaceURL(prefix2 + "/1"));
         }
         catch (HandleException e)
         {
@@ -739,7 +669,7 @@ public class MultiRemoteDSpaceRepositoryHandlePlugin implements HandleStorage
         }
         try
         {
-            System.out.println(multi.getRemoteDSpaceURL("123456780/1111111"));
+            System.out.println(multi.getRemoteDSpaceURL(prefix2 + "/1111111"));
         }
         catch (HandleException e)
         {
